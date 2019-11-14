@@ -1,6 +1,3 @@
-[loadbalancer]
-lb01
-
 [webserver]
 app01
 app02

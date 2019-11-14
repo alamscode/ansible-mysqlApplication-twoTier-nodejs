@@ -10,7 +10,7 @@
   tags: ['packages']
 
 - name: ensure mysql listens on eth0 interface address
-  lineinfile: dest=/etc/mysql/my.cnf regexp=^bind-address
+  lineinfile: dest=/etc/mysql/mysql.conf.d/mysqld.cnf regexp=^bind-address
     line="bind-address = {{ ansible_eth0.ipv4.address }}"
   notify: restart mysql
   tags: ['configure']
@@ -18,12 +18,29 @@
 - name: create database
   mysql_db: name={{ db_name }} state=present
   tags: ['configure']
+  register: mysqldump
 
 - name: create demo user
   mysql_user: name={{ db_user_name }} password={{ db_user_pass }}
               priv={{ db_name }}.*:ALL
               host='{{ db_user_host }}' state=present
   tags: ['configure']
+
+
+- name: copy demo app source
+  copy: src=t_user.sql dest=/root mode=0755
+  notify: restart mysql
+  tags: ['configure']
+
+- name: mysql dump
+  mysql_db:
+    name: test
+    state: import
+    target: /root/t_user.sql
+  notify: restart mysql
+  tags: ['configure']
+  when: mysqldump.changed
+- debug: var=mysqldump
 
 - name: ensure mysql started
   service: name=mysql state=started enabled=yes
