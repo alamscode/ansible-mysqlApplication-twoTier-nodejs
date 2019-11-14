@@ -35,7 +35,7 @@
 
   - name: pointing NodeJS app to mysql host
     replace: dest={{homeDir}}/{{appDir}}/server.js regexp=''''
-      replace=''root''
+      replace=''{{ db_pass }}''
 
   - name: Running NPM install
     npm: path={{homeDir}}/{{appDir}}/
